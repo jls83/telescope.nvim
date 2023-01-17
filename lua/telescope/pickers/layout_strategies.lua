@@ -871,8 +871,8 @@ layout_strategies.bottom_pane = make_documented_layout(
 
     -- Height
     prompt.height = 1
-    results.height = height - prompt.height - (2 * bs)
-    preview.height = results.height - bs
+    results.height = height - (prompt.height + (2 * bs))
+    preview.height = results.height + 3
 
     -- Width
     prompt.width = max_columns - 2 * bs
@@ -882,7 +882,9 @@ layout_strategies.bottom_pane = make_documented_layout(
 
       preview.width = resolve.resolve_width(vim.F.if_nil(layout_config.preview_width, 0.5))(self, width, max_lines)
       results.width = width - preview.width - w_space
+      prompt.width = results.width
     else
+      prompt.width = max_columns - 2 * bs
       results.width = prompt.width
       preview.width = 0
     end
@@ -890,30 +892,35 @@ layout_strategies.bottom_pane = make_documented_layout(
     -- Line
     if layout_config.prompt_position == "top" then
       prompt.line = max_lines - results.height - (1 + bs) + 1
-      results.line = prompt.line + 1
-      preview.line = results.line + bs
-      if results.border == true then
-        results.border = { 0, 1, 1, 1 }
-      end
+      preview.line = prompt.line
+      results.line = prompt.line + 3
+
+      preview.height = preview.height - 2
+      results.height = results.height - 2
+
       if type(results.title) == "string" then
-        results.title = { { pos = "S", text = results.title } }
+        results.title = { { pos = "N", text = results.title } }
+      end
+      if results.border == true then
+        results.border = { 1, 1, 1, 1 }
       end
     elseif layout_config.prompt_position == "bottom" then
-      results.line = max_lines - results.height - (1 + bs) + 1
+      results.line = max_lines - results.height - (3 + bs) + 1
       preview.line = results.line
       prompt.line = max_lines - bs
+
       if type(prompt.title) == "string" then
-        prompt.title = { { pos = "S", text = prompt.title } }
+        prompt.title = { { pos = "N", text = prompt.title } }
       end
       if results.border == true then
-        results.border = { 1, 1, 0, 1 }
+        results.border = { 1, 1, 1, 1 }
       end
     else
       error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
     end
 
     -- Col
-    prompt.col = 0 -- centered
+    prompt.col = bs + 1
     if layout_config.mirror and preview.width > 0 then
       results.col = preview.width + (3 * bs) + 1
       preview.col = bs + 1
